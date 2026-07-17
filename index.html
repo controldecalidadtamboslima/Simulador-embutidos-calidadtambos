@@ -136,12 +136,12 @@
                 <span class="uca-lbl">Col. Críticas (&gt;8)</span>
             </div>
             <div class="uca-metric-box">
-                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">59.6%</span>
+                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">62.5%</span>
                 <span class="uca-lbl">Eficiencia Estiba</span>
             </div>
         </div>
         <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Capacidad Máxima:</span><span class="data-value" style="color: #00d2ff;">208 Jabas</span></div>
-        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">124 Jabas</span></div>
+        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">130 Jabas</span></div>
 
         <div class="legend-section">
             <div class="legend-item"><div class="legend-color" style="background-color: #1d58b5;"></div><span>Aprobado (Azul)</span></div>
@@ -153,14 +153,14 @@
     </div>
 
     <div id="detail-card" style="display: none;">
-        <h3 id="prod-name">R NUGGET DE POLLO X 180G X 10UND</h3>
-        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">109R46</span></div>
+        <h3 id="prod-name">RC JAMONADA POLLO TUBO 2 KG</h3>
+        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">109P72</span></div>
         <div class="data-row"><span class="data-label">Marca:</span><span class="data-value" id="prod-marca">RICO</span></div>
-        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">Zona: EXTERIOR | CONGELADOR 3</span></div>
-        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">200 unds</span></div>
-        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">250 unds</span></div>
-        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">180 días</span></div>
-        <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge aprobado">APROBADO</span></div>
+        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">Lado IZQUIERDO | Columna 1 - Piso 1</span></div>
+        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">8 unds</span></div>
+        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">0 unds</span></div>
+        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">48 días</span></div>
+        <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge sin-stock">SIN STOCK</span></div>
     </div>
 
     <script>
@@ -195,13 +195,13 @@
             "109P72",
             "IZQUIERDO",
             "1",
-            "1",
+            "0",
             "RICO",
             "RC JAMONADA POLLO TUBO 2 KG",
             "FUNDA",
             "48",
             "8",
-            "10",
+            "0",
             "APROBADO",
             "Frecuente"
         ],
@@ -518,14 +518,14 @@
             "109R82",
             "DERECHO",
             "5",
-            "0",
+            "6",
             "CASA EUROPA",
             "VIENESA ESPECIAL(PAQX240GX5UND)",
             "TERMOFORMADO",
             "40",
             "40",
-            "0",
-            "SIN STOCK",
+            "250",
+            "APROBADO",
             "Frecuente"
         ],
         "CÃ³digo Tambos": "109R82",
@@ -670,13 +670,13 @@
             "109P35",
             "DERECHO",
             "13",
-            "2",
+            "4",
             "CASA EUROPA",
             "CHICHARRON PRENSA (PQTX100GRX6UND)",
             "REFRIGERADO",
             "45",
             "180",
-            "195",
+            "445",
             "APROBADO",
             "Frecuente"
         ],
@@ -787,7 +787,6 @@
         const matPlomoSinStock = new THREE.MeshStandardMaterial({ color: 0x555861, roughness: 0.6 });
         const matGrisLibre = new THREE.MeshStandardMaterial({ color: 0x7a8090, roughness: 0.7 });
         
-        // NUEVO MATERIAL PARA SOBREAPILADO (ALERTA ROJA)
         const matAlertaSobreapilado = new THREE.MeshStandardMaterial({ 
             color: 0xff2222, 
             emissive: 0x550000, 
@@ -1082,16 +1081,13 @@
                 if (isNaN(colNum) || colNum < 1 || colNum > 13) return;
 
                 const colZ = startZ - ((colNum - 1) * jL);
+                // CORRECCIÓN INTEGRADA: Si el piso es 0, forzamos la creación de 1 objeto base
                 let pisosMax = parseInt(pisoTexto) || 0;
+                let cantFisicaRender = (pisosMax === 0) ? 1 : pisosMax;
 
                 if (lado.includes("IZQ") || lado.includes("DER")) {
-                    let cantFisicaRender = pisosMax;
-                    if ((estado.includes("LIB") || estado.includes("SIN") || normCodigo === "vacio") && pisosMax === 0) {
-                        cantFisicaRender = 1; 
-                    }
-
-                    if (cantFisicaRender > 8) columnasConExceso++;
-                    if (!estado.includes("LIB") && normCodigo !== "vacio") totalJabasDibu += cantFisicaRender;
+                    if (pisosMax > 8) columnasConExceso++;
+                    if (!estado.includes("LIB") && normCodigo !== "vacio" && pisosMax > 0) totalJabasDibu += pisosMax;
 
                     const xPos = lado.includes("IZQ") ? xPosIzq : xPosDer;
                     const grupoHijo = lado.includes("IZQ") ? grupoIzquierdo : grupoDerecho;
@@ -1101,13 +1097,16 @@
                         let colorHex;
                         let estadoFinalJaba = estado;
 
-                        // EVALUAMOS REGLA AUTOMÁTICA: Si el piso actual es mayor a 8 (piso 9 en adelante)
-                        if (piso >= 8) {
+                        // Lógica de materiales con prioridad para piso 0
+                        if (pisosMax === 0) {
+                            matUsar = matPlomoSinStock.clone();
+                            colorHex = 0x555861;
+                            estadoFinalJaba = "SIN STOCK";
+                        } else if (piso >= 8) {
                             matUsar = matAlertaSobreapilado.clone();
                             colorHex = 0xff2222;
                             estadoFinalJaba = "SOBREAPILADO (ALERTA)";
                         } else {
-                            // Colores normales según stock y control de calidad
                             if (estado.includes("OBS") || normCodigo === "observados") {
                                 matUsar = matRojoObs.clone();
                                 colorHex = 0xc92a2a;
@@ -1253,7 +1252,6 @@
             const badge = document.getElementById('prod-estado');
             badge.innerText = p.estado;
             
-            // Clase de estilo según estado, incluyendo el nuevo sobreapilado
             let className = "badge";
             if (p.estado.includes("SOBREAPILADO")) {
                 className += " sobreapilado";
