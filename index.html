@@ -54,7 +54,7 @@
         .data-value { color: #fff; text-align: right; }
         .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
         .badge.aprobado { background-color: #28a745; }
-        .badge.observado { background-color: #dc3545; }
+        .badge.observado { background-color: #ffc107; color: black; } /* CAMBIADO A AMARILLO CON TEXTO NEGRO */
         .badge.sin-stock { background-color: #555861; }
         .badge.libre { background-color: #7a8090; }
         .badge.sobreapilado { background-color: #ff2222; box-shadow: 0 0 8px #ff2222; }
@@ -136,30 +136,30 @@
                 <span class="uca-lbl">Col. Críticas (&gt;8)</span>
             </div>
             <div class="uca-metric-box">
-                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">56.7%</span>
+                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">49.5%</span>
                 <span class="uca-lbl">Eficiencia Estiba</span>
             </div>
         </div>
         <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Capacidad Máxima:</span><span class="data-value" style="color: #00d2ff;">208 Jabas</span></div>
-        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">118 Jabas</span></div>
+        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">103 Jabas</span></div>
 
         <div class="legend-section">
             <div class="legend-item"><div class="legend-color" style="background-color: #1d58b5;"></div><span>Aprobado (Azul)</span></div>
-            <div class="legend-item"><div class="legend-color" style="background-color: #c92a2a;"></div><span>Observados (Rojo)</span></div>
+            <div class="legend-item"><div class="legend-color" style="background-color: #ffc107;"></div><span>Observados (Amarillo)</span></div> <!-- CAMBIADO EN LA LEYENDA -->
             <div class="legend-item"><div class="legend-color" style="background-color: #ff2222; box-shadow: 0 0 5px #ff2222;"></div><span style="color: #ff5555; font-weight: bold;">Exceso Estiba (Falla)</span></div>
             <div class="legend-item"><div class="legend-color" style="background-color: #555861;"></div><span>Sin Stock (Plomo)</span></div>
             <div class="legend-item"><div class="legend-color" style="background-color: #ffffff; border: 1px solid #888;"></div><span>Congeladoras (Blanco)</span></div>
         </div>
     </div>
 
-    <div id="detail-card" style="display: block;">
-        <h3 id="prod-name">RC SALCH POLLO ESP X 200GR X 6UND</h3>
-        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">109P64</span></div>
+    <div id="detail-card" style="display: none;">
+        <h3 id="prod-name">RC JAMON SANDWICH (MOLDE X 5.0KG)</h3>
+        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">109S25</span></div>
         <div class="data-row"><span class="data-label">Marca:</span><span class="data-value" id="prod-marca">RICO</span></div>
-        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">Lado DERECHO | Columna 9 - Piso 4</span></div>
-        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">100 unds</span></div>
-        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">1378 unds</span></div>
-        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">48 días</span></div>
+        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">Lado DERECHO | Columna 6 - Piso 1</span></div>
+        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">3 unds</span></div>
+        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">11 unds</span></div>
+        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">60 días</span></div>
         <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge aprobado">APROBADO</span></div>
     </div>
 
@@ -214,13 +214,13 @@
             "109P81",
             "IZQUIERDO",
             "2",
-            "4",
+            "3",
             "RICO",
             "RC JAMONADA CON POLLO PQT x 85 GR 10 ROD",
             "TERMOFORMADO",
             "48",
             "180",
-            "425",
+            "350",
             "APROBADO",
             "Frecuente"
         ],
@@ -233,13 +233,13 @@
             "109P70",
             "IZQUIERDO",
             "3",
-            "6",
+            "5",
             "RICO",
             "R PERRO CALIENTE POLLO X 900GR 24 UND",
             "TERMOFORMADO",
             "48",
             "24",
-            "96",
+            "79",
             "APROBADO",
             "Frecuente"
         ],
@@ -252,13 +252,13 @@
             "109P65",
             "IZQUIERDO",
             "4",
-            "7",
+            "6",
             "RICO",
             "RC SALCH POLLO ESP X 100GR X 3UND",
             "TERMOFORMADO",
             "48",
             "180",
-            "1187",
+            "1031",
             "APROBADO",
             "Frecuente"
         ],
@@ -273,11 +273,11 @@
             "5",
             "1",
             "RICO",
-            "R PATÃ‰ (UNDX100GR)",
+            "R PATE (UNDX100GR)",
             "FUNDA",
             "48",
             "160",
-            "53",
+            "22",
             "APROBADO",
             "Frecuente"
         ],
@@ -296,7 +296,7 @@
             "TERMOFORMADO",
             "48",
             "100",
-            "462",
+            "419",
             "APROBADO",
             "Frecuente"
         ],
@@ -315,7 +315,7 @@
             "FUNDA",
             "60",
             "7",
-            "29",
+            "30",
             "APROBADO",
             "Frecuente"
         ],
@@ -334,7 +334,7 @@
             "TERMOFORMADO",
             "48",
             "24",
-            "375",
+            "260",
             "APROBADO",
             "Frecuente"
         ],
@@ -347,13 +347,13 @@
             "109P69",
             "IZQUIERDO",
             "9",
-            "6",
+            "1",
             "RICO",
             "RC CHORIZO PREC PARR CERDO X 0.90 G 12UN",
             "TERMOFORMADO",
             "48",
             "24",
-            "375",
+            "260",
             "APROBADO",
             "Frecuente"
         ],
@@ -372,7 +372,7 @@
             "TERMOFORMADO",
             "48",
             "180",
-            "1037",
+            "903",
             "APROBADO",
             "Frecuente"
         ],
@@ -391,7 +391,7 @@
             "TERMOFORMADO",
             "48",
             "180",
-            "1037",
+            "903",
             "APROBADO",
             "Frecuente"
         ],
@@ -404,13 +404,13 @@
             "109P63",
             "IZQUIERDO",
             "12",
-            "7",
+            "6",
             "RICO",
             "R JAMONADA CON POLLO X 200G",
             "TERMOFORMADO",
             "48",
             "75",
-            "249",
+            "229",
             "APROBADO",
             "Frecuente"
         ],
@@ -423,13 +423,13 @@
             "109P71",
             "IZQUIERDO",
             "13",
-            "8",
+            "6",
             "RICO",
             "RC SUPER SALCHICHA ROSADA 900GR X 24UND",
             "TERMOFORMADO",
             "48",
             "20",
-            "142",
+            "116",
             "APROBADO",
             "Frecuente"
         ],
@@ -505,7 +505,7 @@
             "MOLDE",
             "60",
             "6",
-            "20",
+            "17",
             "APROBADO",
             "Frecuente"
         ],
@@ -518,13 +518,13 @@
             "109R82",
             "DERECHO",
             "5",
-            "6",
+            "5",
             "CASA EUROPA",
             "VIENESA ESPECIAL(PAQX240GX5UND)",
             "TERMOFORMADO",
             "40",
             "40",
-            "239",
+            "181",
             "APROBADO",
             "Frecuente"
         ],
@@ -562,7 +562,7 @@
             "REFRIGERADO",
             "30",
             "160",
-            "61",
+            "19",
             "APROBADO",
             "Frecuente"
         ],
@@ -600,7 +600,7 @@
             "TERMOFORMADO",
             "48",
             "100",
-            "1378",
+            "1268",
             "APROBADO",
             "Frecuente"
         ],
@@ -613,13 +613,13 @@
             "109P64",
             "DERECHO",
             "10",
-            "5",
+            "4",
             "RICO",
             "RC SALCH POLLO ESP X 200GR X 6UND",
             "TERMOFORMADO",
             "48",
             "100",
-            "1378",
+            "1268",
             "APROBADO",
             "Frecuente"
         ],
@@ -632,13 +632,13 @@
             "109P36",
             "DERECHO",
             "11",
-            "3",
+            "2",
             "CASA EUROPA",
             "JAMON PIZZERO (PQTX100GRX6LON)",
             "REFRIGERADO",
             "45",
             "180",
-            "367",
+            "331",
             "APROBADO",
             "Frecuente"
         ],
@@ -651,13 +651,13 @@
             "109P37",
             "DERECHO",
             "12",
-            "4",
+            "3",
             "CASA EUROPA",
             "JAMONADA ESPECIAL (PQTX100GRX8LON)",
             "REFRIGERADO",
             "45",
             "180",
-            "460",
+            "423",
             "APROBADO",
             "Frecuente"
         ],
@@ -676,7 +676,7 @@
             "REFRIGERADO",
             "45",
             "180",
-            "370",
+            "325",
             "APROBADO",
             "Frecuente"
         ],
@@ -695,7 +695,7 @@
             "BOLSA",
             "180",
             "200",
-            "444",
+            "0",
             "APROBADO",
             "Frecuente"
         ],
@@ -714,7 +714,7 @@
             "BOLSA",
             "180",
             "200",
-            "444",
+            "0",
             "APROBADO",
             "Frecuente"
         ],
@@ -733,7 +733,7 @@
             "BOLSA",
             "180",
             "200",
-            "444",
+            "289",
             "APROBADO",
             "Frecuente"
         ],
@@ -783,7 +783,7 @@
         const jabaGeo = new THREE.BoxGeometry(jW - 0.015, jH - 0.015, jL - 0.015);
         
         const matAzul = new THREE.MeshStandardMaterial({ color: 0x1d58b5, roughness: 0.5 });
-        const matRojoObs = new THREE.MeshStandardMaterial({ color: 0xc92a2a, roughness: 0.5 }); 
+        const matRojoObs = new THREE.MeshStandardMaterial({ color: 0xffc107, roughness: 0.5 }); // CAMBIADO A HEXADECIMAL AMARILLO
         const matPlomoSinStock = new THREE.MeshStandardMaterial({ color: 0x555861, roughness: 0.6 });
         const matGrisLibre = new THREE.MeshStandardMaterial({ color: 0x7a8090, roughness: 0.7 });
         
@@ -1081,7 +1081,6 @@
                 if (isNaN(colNum) || colNum < 1 || colNum > 13) return;
 
                 const colZ = startZ - ((colNum - 1) * jL);
-                // CORRECCIÓN INTEGRADA: Si el piso es 0, forzamos la creación de 1 objeto base
                 let pisosMax = parseInt(pisoTexto) || 0;
                 let cantFisicaRender = (pisosMax === 0) ? 1 : pisosMax;
 
@@ -1097,7 +1096,6 @@
                         let colorHex;
                         let estadoFinalJaba = estado;
 
-                        // Lógica de materiales con prioridad para piso 0
                         if (pisosMax === 0) {
                             matUsar = matPlomoSinStock.clone();
                             colorHex = 0x555861;
@@ -1109,7 +1107,7 @@
                         } else {
                             if (estado.includes("OBS") || normCodigo === "observados") {
                                 matUsar = matRojoObs.clone();
-                                colorHex = 0xc92a2a;
+                                colorHex = 0xffc107; // CAMBIADO EL INTERNO DE COLOR A AMARILLO
                             } else if (estado.includes("SIN")) {
                                 matUsar = matPlomoSinStock.clone();
                                 colorHex = 0x555861;
@@ -1306,6 +1304,6 @@
         }
 
         animate();
-    </script><canvas width="1280" height="855" style="display: block; width: 1280px; height: 855px;"></canvas>
+    </script><canvas width="1366" height="599" style="display: block; width: 1366px; height: 599px;"></canvas>
 
 </body></html>
