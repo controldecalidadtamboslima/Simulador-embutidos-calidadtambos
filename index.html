@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es"><head>
+<html lang="es">
+<head>
     <meta charset="UTF-8">
     <title>Simulador 3D en Tiempo Real - Tambos Perú SAC</title>
     <style>
@@ -54,10 +55,13 @@
         .data-value { color: #fff; text-align: right; }
         .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
         .badge.aprobado { background-color: #28a745; }
-        .badge.observado { background-color: #ffc107; color: black; } /* CAMBIADO A AMARILLO CON TEXTO NEGRO */
+        .badge.observado { background-color: #ffc107; color: black; }
         .badge.sin-stock { background-color: #555861; }
         .badge.libre { background-color: #7a8090; }
         .badge.sobreapilado { background-color: #ff2222; box-shadow: 0 0 8px #ff2222; }
+        .badge.critico-vencimiento { background-color: #ff1e1e; box-shadow: 0 0 8px #ff1e1e; }
+        .badge.alerta-vencimiento { background-color: #ff9500; color: black; }
+        .badge.vencido { background-color: #990000; box-shadow: 0 0 8px #ff1e1e; }
 
         #sync-status {
             position: absolute;
@@ -115,7 +119,7 @@
         <p style="color: #ff3b3b; margin-top: 5px;">🔴 Límite máximo permitido (8 Pisos)</p>
     </div>
 
-    <div id="sync-status" style="color: rgb(0, 255, 204);">✅ ¡Cargado con éxito!</div>
+    <div id="sync-status">🔄 Esperando archivo local (.csv)...</div>
 
     <div id="controls-panel">
         <button class="btn-control active" onclick="filtrarLado('AMBOS', this)">Ver Todo</button>
@@ -125,7 +129,16 @@
         
         <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="cargarCSVLocal(event)">
         <button class="btn-control" style="background-color: #28a745; border-color: #28a745;" onclick="document.getElementById('csv-file-input').click()">📁 Cargar CSV Manual</button>
-        <button class="btn-control" id="btn-save-html" style="background-color: rgb(0, 210, 255); border-color: rgb(0, 210, 255); color: rgb(0, 0, 0); display: inline-block;" onclick="exportarHTMLConDatos()">💾 Guardar Estado Actual</button>
+        <button class="btn-control" id="btn-save-html" style="background-color: #00d2ff; border-color: #00d2ff; color: #000; display: none;" onclick="exportarHTMLConDatos()">💾 Guardar Estado Actual</button>
+
+        <div style="display:flex; align-items:center; gap:4px; background:#1a1c26; padding:4px 8px; border-radius:5px; border:1px solid #555;">
+            <label for="input-umbral-critico" style="font-size:11px; color:#ff5555; font-weight:bold;">🔴 Crítico (días):</label>
+            <input type="number" id="input-umbral-critico" value="10" min="0" style="width:45px; background:#111; color:#fff; border:1px solid #555; border-radius:3px; padding:2px 4px; font-size:11px;" onchange="actualizarUmbrales()">
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; background:#1a1c26; padding:4px 8px; border-radius:5px; border:1px solid #555;">
+            <label for="input-umbral-alerta" style="font-size:11px; color:#ff9500; font-weight:bold;">🟠 Alerta (días):</label>
+            <input type="number" id="input-umbral-alerta" value="25" min="0" style="width:45px; background:#111; color:#fff; border:1px solid #555; border-radius:3px; padding:2px 4px; font-size:11px;" onchange="actualizarUmbrales()">
+        </div>
     </div>
 
     <div id="uca-legend">
@@ -133,615 +146,46 @@
         <div class="uca-metric-container">
             <div class="uca-metric-box">
                 <span class="uca-val" id="uca-criticos" style="color: #ff3b3b;">0</span>
-                <span class="uca-lbl">Col. Críticas (&gt;8)</span>
+                <span class="uca-lbl">Col. Críticas (>8)</span>
             </div>
             <div class="uca-metric-box">
-                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">32.7%</span>
+                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">0%</span>
                 <span class="uca-lbl">Eficiencia Estiba</span>
             </div>
         </div>
         <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Capacidad Máxima:</span><span class="data-value" style="color: #00d2ff;">208 Jabas</span></div>
-        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">68 Jabas</span></div>
+        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">0 Jabas</span></div>
+        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Por Vencer (Crít+Alerta):</span><span class="data-value" id="uca-por-vencer" style="color: #ff9500;">0 Jabas</span></div>
 
         <div class="legend-section">
             <div class="legend-item"><div class="legend-color" style="background-color: #1d58b5;"></div><span>Aprobado (Azul)</span></div>
-            <div class="legend-item"><div class="legend-color" style="background-color: #ffc107;"></div><span>Observados (Amarillo)</span></div> <!-- CAMBIADO EN LA LEYENDA -->
+            <div class="legend-item"><div class="legend-color" style="background-color: #ffc107;"></div><span>Observados (Amarillo)</span></div>
             <div class="legend-item"><div class="legend-color" style="background-color: #ff2222; box-shadow: 0 0 5px #ff2222;"></div><span style="color: #ff5555; font-weight: bold;">Exceso Estiba (Falla)</span></div>
             <div class="legend-item"><div class="legend-color" style="background-color: #555861;"></div><span>Sin Stock (Plomo)</span></div>
             <div class="legend-item"><div class="legend-color" style="background-color: #ffffff; border: 1px solid #888;"></div><span>Congeladoras (Blanco)</span></div>
         </div>
+        <div class="legend-section">
+            <div class="legend-item"><div class="legend-color" style="background-color: #ff9500;"></div><span style="color: #ff9500; font-weight: bold;">Por vencer (Ámbar) - dentro del umbral alerta</span></div>
+            <div class="legend-item"><div class="legend-color" style="background-color: #ff1e1e; box-shadow: 0 0 5px #ff1e1e;"></div><span style="color: #ff5555; font-weight: bold;">Vence pronto (Rojo) - dentro del umbral crítico</span></div>
+        </div>
     </div>
 
-    <div id="detail-card" style="display: none;">
-        <h3 id="prod-name">RC SALCH POLLO ESP X 200GR X 6UND</h3>
-        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">109P64</span></div>
-        <div class="data-row"><span class="data-label">Marca:</span><span class="data-value" id="prod-marca">RICO</span></div>
-        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">Lado DERECHO | Columna 9 - Piso 2</span></div>
-        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">100 unds</span></div>
-        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">686 unds</span></div>
-        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">48 días</span></div>
-        <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge aprobado">APROBADO</span></div>
+    <div id="detail-card">
+        <h3 id="prod-name">Cargando...</h3>
+        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">-</span></div>
+        <div class="data-row"><span class="data-label">Marca:</span><span class="data-value" id="prod-marca">-</span></div>
+        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">-</span></div>
+        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">-</span></div>
+        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">-</span></div>
+        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">-</span></div>
+        <div class="data-row"><span class="data-label">Fecha Vencimiento:</span><span class="data-value" id="prod-fecha-venc">-</span></div>
+        <div class="data-row"><span class="data-label">Días para Vencer:</span><span class="data-value" id="prod-dias-venc">-</span></div>
+        <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge">PENDIENTE</span></div>
+        <div class="data-row" id="row-extra" style="display: none;"><span class="data-label">Info Adicional:</span><span class="data-value" id="prod-extra" style="color:#00d2ff;">-</span></div>
     </div>
 
     <script>
-        const DATOS_PRECARGADOS = [
-    {
-        "_rawRow": [
-            "1 - Inicio"
-        ],
-        "CÃ³digo Tambos": "1 - Inicio",
-        "Lado (Izquierdo / Derecho)": "",
-        "NÂ° Columna": ""
-    },
-    {
-        "_rawRow": [
-            "13 - Final"
-        ],
-        "CÃ³digo Tambos": "13 - Final",
-        "Lado (Izquierdo / Derecho)": "",
-        "NÂ° Columna": ""
-    },
-    {
-        "_rawRow": [
-            "(Del 1 al 13),NÂ° Piso (1 al 8",
-            "de abajo a arriba),Marca,DescripciÃ³n del Producto,Empaque del bulto,Tiempo de Vida del Prod. (dÃ­as),Cant de Unidades por Jaba,Stock Unidades,Estado (APROBADO / OBSERVADO),INGRESO"
-        ],
-        "CÃ³digo Tambos": "(Del 1 al 13),NÂ° Piso (1 al 8",
-        "Lado (Izquierdo / Derecho)": "de abajo a arriba),Marca,DescripciÃ³n del Producto,Empaque del bulto,Tiempo de Vida del Prod. (dÃ­as),Cant de Unidades por Jaba,Stock Unidades,Estado (APROBADO / OBSERVADO),INGRESO",
-        "NÂ° Columna": ""
-    },
-    {
-        "_rawRow": [
-            "109P72",
-            "IZQUIERDO",
-            "1",
-            "0",
-            "RICO",
-            "RC JAMONADA POLLO TUBO 2 KG",
-            "FUNDA",
-            "48",
-            "8",
-            "0",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P72",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "1"
-    },
-    {
-        "_rawRow": [
-            "109P81",
-            "IZQUIERDO",
-            "2",
-            "4",
-            "RICO",
-            "RC JAMONADA CON POLLO PQT x 85 GR 10 ROD",
-            "TERMOFORMADO",
-            "48",
-            "180",
-            "703",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P81",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "2"
-    },
-    {
-        "_rawRow": [
-            "109P70",
-            "IZQUIERDO",
-            "3",
-            "3",
-            "RICO",
-            "R PERRO CALIENTE POLLO X 900GR 24 UND",
-            "TERMOFORMADO",
-            "48",
-            "24",
-            "44",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P70",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "3"
-    },
-    {
-        "_rawRow": [
-            "109P65",
-            "IZQUIERDO",
-            "4",
-            "5",
-            "RICO",
-            "RC SALCH POLLO ESP X 100GR X 3UND",
-            "TERMOFORMADO",
-            "48",
-            "180",
-            "654",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P65",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "4"
-    },
-    {
-        "_rawRow": [
-            "109S74",
-            "IZQUIERDO",
-            "5",
-            "0",
-            "RICO",
-            "R PATE (UNDX100GR)",
-            "FUNDA",
-            "48",
-            "160",
-            "0",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109S74",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "5"
-    },
-    {
-        "_rawRow": [
-            "109Q57",
-            "IZQUIERDO",
-            "6",
-            "5",
-            "RICO",
-            "HOT DOG TRADICIONAL X200GR RICO",
-            "TERMOFORMADO",
-            "48",
-            "100",
-            "303",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109Q57",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "6"
-    },
-    {
-        "_rawRow": [
-            "109S26",
-            "IZQUIERDO",
-            "7",
-            "1",
-            "RICO",
-            "RC JAMON SANDWICH (MOLDE X 2.5KG)",
-            "FUNDA",
-            "60",
-            "7",
-            "4",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109S26",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "7"
-    },
-    {
-        "_rawRow": [
-            "VACIO",
-            "DERECHO",
-            "8",
-            "0",
-            "RICO /CASAEUROPA",
-            "DEFINIR MARCA",
-            "VARIOS",
-            "VARIOS",
-            "0",
-            "0",
-            "LIBRE",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "VACIO",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "8"
-    },
-    {
-        "_rawRow": [
-            "109P69",
-            "IZQUIERDO",
-            "9",
-            "1",
-            "RICO",
-            "RC CHORIZO PREC PARR CERDO X 0.90 G 12UN",
-            "TERMOFORMADO",
-            "48",
-            "24",
-            "0",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P69",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "9"
-    },
-    {
-        "_rawRow": [
-            "VACIO",
-            "DERECHO",
-            "10",
-            "0",
-            "RICO /CASAEUROPA",
-            "DEFINIR MARCA",
-            "VARIOS",
-            "VARIOS",
-            "0",
-            "0",
-            "LIBRE",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "VACIO",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "10"
-    },
-    {
-        "_rawRow": [
-            "109P66",
-            "IZQUIERDO",
-            "11",
-            "7",
-            "RICO",
-            "RC CHORIZO COCIDO UNITARIO 83GR",
-            "TERMOFORMADO",
-            "48",
-            "180",
-            "1071",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P66",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "11"
-    },
-    {
-        "_rawRow": [
-            "109P63",
-            "IZQUIERDO",
-            "12",
-            "6",
-            "RICO",
-            "R JAMONADA CON POLLO X 200G",
-            "TERMOFORMADO",
-            "48",
-            "75",
-            "385",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P63",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "12"
-    },
-    {
-        "_rawRow": [
-            "109P71",
-            "IZQUIERDO",
-            "13",
-            "1",
-            "RICO",
-            "RC SUPER SALCHICHA ROSADA 900GR X 24UND",
-            "TERMOFORMADO",
-            "48",
-            "20",
-            "1",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P71",
-        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
-        "NÂ° Columna": "13"
-    },
-    {
-        "_rawRow": [
-            "OBSERVADOS",
-            "DERECHO",
-            "1",
-            "5",
-            "RICO /CASAEUROPA",
-            "MULTIPLE MARCAS",
-            "VARIOS",
-            "VARIOS",
-            "0",
-            "0",
-            "OBSERVADOS",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "OBSERVADOS",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "1"
-    },
-    {
-        "_rawRow": [
-            "109R97",
-            "DERECHO",
-            "2",
-            "1",
-            "CASA EUROPA",
-            "JAMON PIZZERO (MOLDE 3KG)",
-            "FUNDA",
-            "60",
-            "7",
-            "4",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109R97",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "2"
-    },
-    {
-        "_rawRow": [
-            "109P61",
-            "DERECHO",
-            "3",
-            "5",
-            "CASA EUROPA",
-            "CABANOSSI (CJX25UNDX625GR)",
-            "AMBIENTE",
-            "120",
-            "6",
-            "26",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P61",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "3"
-    },
-    {
-        "_rawRow": [
-            "109R96",
-            "DERECHO",
-            "4",
-            "4",
-            "CASA EUROPA",
-            "CHICHARRON PRENSA (MOLDE 3KG)",
-            "MOLDE",
-            "60",
-            "6",
-            "24",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109R96",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "4"
-    },
-    {
-        "_rawRow": [
-            "109R82",
-            "DERECHO",
-            "5",
-            "3",
-            "CASA EUROPA",
-            "VIENESA ESPECIAL(PAQX240GX5UND)",
-            "TERMOFORMADO",
-            "40",
-            "40",
-            "129",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109R82",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "5"
-    },
-    {
-        "_rawRow": [
-            "109S25",
-            "DERECHO",
-            "6",
-            "1",
-            "RICO",
-            "RC JAMON SANDWICH (MOLDE X 5.0KG)",
-            "FUNDA",
-            "60",
-            "3",
-            "5",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109S25",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "6"
-    },
-    {
-        "_rawRow": [
-            "109P62",
-            "DERECHO",
-            "7",
-            "1",
-            "CASA EUROPA",
-            "SALCHICHA HUACHO (UNDX150GR)",
-            "REFRIGERADO",
-            "30",
-            "160",
-            "62",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P62",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "7"
-    },
-    {
-        "_rawRow": [
-            "VACIO",
-            "DERECHO",
-            "8",
-            "0",
-            "RICO /CASAEUROPA",
-            "DEFINIR MARCA",
-            "VARIOS",
-            "VARIOS",
-            "0",
-            "0",
-            "LIBRE",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "VACIO",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "8"
-    },
-    {
-        "_rawRow": [
-            "109P64",
-            "DERECHO",
-            "9",
-            "7",
-            "RICO",
-            "RC SALCH POLLO ESP X 200GR X 6UND",
-            "TERMOFORMADO",
-            "48",
-            "100",
-            "686",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P64",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "9"
-    },
-    {
-        "_rawRow": [
-            "VACIO",
-            "DERECHO",
-            "10",
-            "0",
-            "RICO /CASAEUROPA",
-            "DEFINIR MARCA",
-            "VARIOS",
-            "VARIOS",
-            "0",
-            "0",
-            "LIBRE",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "VACIO",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "10"
-    },
-    {
-        "_rawRow": [
-            "109P36",
-            "DERECHO",
-            "11",
-            "2",
-            "CASA EUROPA",
-            "JAMON PIZZERO (PQTX100GRX6LON)",
-            "REFRIGERADO",
-            "45",
-            "180",
-            "275",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P36",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "11"
-    },
-    {
-        "_rawRow": [
-            "109P37",
-            "DERECHO",
-            "12",
-            "4",
-            "CASA EUROPA",
-            "JAMONADA ESPECIAL (PQTX100GRX8LON)",
-            "REFRIGERADO",
-            "45",
-            "180",
-            "368",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P37",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "12"
-    },
-    {
-        "_rawRow": [
-            "109P35",
-            "DERECHO",
-            "13",
-            "2",
-            "CASA EUROPA",
-            "CHICHARRON PRENSA (PQTX100GRX6UND)",
-            "REFRIGERADO",
-            "45",
-            "180",
-            "311",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109P35",
-        "Lado (Izquierdo / Derecho)": "DERECHO",
-        "NÂ° Columna": "13"
-    },
-    {
-        "_rawRow": [
-            "109R46",
-            "EXTERIOR",
-            "CONGELADOR 1",
-            "1",
-            "RICO",
-            "R NUGGET DE POLLO X 180G X 10UND",
-            "BOLSA",
-            "180",
-            "200",
-            "450",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109R46",
-        "Lado (Izquierdo / Derecho)": "EXTERIOR",
-        "NÂ° Columna": "CONGELADOR 1"
-    },
-    {
-        "_rawRow": [
-            "109R46",
-            "EXTERIOR",
-            "CONGELADOR 2",
-            "1",
-            "RICO",
-            "R NUGGET DE POLLO X 180G X 10UND",
-            "BOLSA",
-            "180",
-            "200",
-            "450",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109R46",
-        "Lado (Izquierdo / Derecho)": "EXTERIOR",
-        "NÂ° Columna": "CONGELADOR 2"
-    },
-    {
-        "_rawRow": [
-            "109R46",
-            "EXTERIOR",
-            "CONGELADOR 3",
-            "1",
-            "RICO",
-            "R NUGGET DE POLLO X 180G X 10UND",
-            "BOLSA",
-            "180",
-            "200",
-            "450",
-            "APROBADO",
-            "Frecuente"
-        ],
-        "CÃ³digo Tambos": "109R46",
-        "Lado (Izquierdo / Derecho)": "EXTERIOR",
-        "NÂ° Columna": "CONGELADOR 3"
-    }
-];
+        const DATOS_PRECARGADOS = null;
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x11111a);
@@ -783,7 +227,7 @@
         const jabaGeo = new THREE.BoxGeometry(jW - 0.015, jH - 0.015, jL - 0.015);
         
         const matAzul = new THREE.MeshStandardMaterial({ color: 0x1d58b5, roughness: 0.5 });
-        const matRojoObs = new THREE.MeshStandardMaterial({ color: 0xffc107, roughness: 0.5 }); // CAMBIADO A HEXADECIMAL AMARILLO
+        const matRojoObs = new THREE.MeshStandardMaterial({ color: 0xffc107, roughness: 0.5 });
         const matPlomoSinStock = new THREE.MeshStandardMaterial({ color: 0x555861, roughness: 0.6 });
         const matGrisLibre = new THREE.MeshStandardMaterial({ color: 0x7a8090, roughness: 0.7 });
         
@@ -792,6 +236,53 @@
             emissive: 0x550000, 
             roughness: 0.2 
         });
+
+        // Materiales para alertas de vencimiento (próximas a caducar)
+        const matVencCritico = new THREE.MeshStandardMaterial({ 
+            color: 0xff1e1e, 
+            emissive: 0x4a0000, 
+            roughness: 0.3 
+        });
+        const matVencAlerta = new THREE.MeshStandardMaterial({ 
+            color: 0xff9500, 
+            emissive: 0x3a1e00, 
+            roughness: 0.4 
+        });
+
+        // Umbrales de días para vencer (editables desde el panel de control)
+        let umbralCritico = 10;
+        let umbralAlerta = 25;
+
+        window.actualizarUmbrales = function() {
+            umbralCritico = parseInt(document.getElementById('input-umbral-critico').value, 10) || 0;
+            umbralAlerta = parseInt(document.getElementById('input-umbral-alerta').value, 10) || 0;
+            if (ultimoDataCargado) construirAlmacen(ultimoDataCargado);
+        };
+
+        // Convierte texto de fecha (dd/mm/aaaa o d-m-aaaa) a objeto Date
+        function parsearFechaVencimiento(texto) {
+            if (!texto) return null;
+            const partes = texto.trim().split(/[\/\-]/);
+            if (partes.length !== 3) return null;
+            let dia = parseInt(partes[0], 10);
+            let mes = parseInt(partes[1], 10);
+            let anio = parseInt(partes[2], 10);
+            if (!dia || !mes || !anio) return null;
+            if (anio < 100) anio += 2000;
+            const fecha = new Date(anio, mes - 1, dia);
+            if (isNaN(fecha.getTime())) return null;
+            return fecha;
+        }
+
+        // Calcula días restantes hasta la fecha de vencimiento (negativo si ya venció)
+        function calcularDiasParaVencer(fechaVenc) {
+            if (!fechaVenc) return null;
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const venc = new Date(fechaVenc);
+            venc.setHours(0, 0, 0, 0);
+            return Math.round((venc - hoy) / (1000 * 60 * 60 * 24));
+        }
 
         const alturaLimite = 8 * jH;
         const lineGeo = new THREE.BufferGeometry().setFromPoints([
@@ -1004,7 +495,8 @@
                                 jabaCant: "0 unds",
                                 stock: "0 unds",
                                 vida: "-",
-                                estado: "LIBRE"
+                                estado: "LIBRE",
+                                extra: "N/A"
                             },
                             columna: pos.id,
                             piso: 1,
@@ -1027,6 +519,8 @@
 
             let totalJabasDibu = 0;
             let columnasConExceso = 0;
+            let jabasCriticasVenc = 0;
+            let jabasAlertaVenc = 0;
 
             filas.forEach((row, idx) => {
                 const parts = row._rawRow;
@@ -1043,6 +537,11 @@
                 let cantPorJaba = parts[8] || "0";
                 let stockUnidades = parts[9] || "0";
                 let estado = (parts[10] || "APROBADO").toUpperCase();
+                let extraInfo = parts[11] || "";
+                let fechaVencTexto = parts[12] || "";
+
+                const fechaVencDate = parsearFechaVencimiento(fechaVencTexto);
+                const diasVencer = calcularDiasParaVencer(fechaVencDate);
 
                 let normCodigo = normalizarTexto(codigo);
                 if (!codigo || normCodigo === "codigotambos") return;
@@ -1068,7 +567,10 @@
                                         jabaCant: `${cantPorJaba || "0"} unds`,
                                         stock: `${stockUnidades || "0"} unds`,
                                         vida: `${vidaUtil || "0"} días`,
-                                        estado: estado || "APROBADO"
+                                        estado: estado || "APROBADO",
+                                        extra: extraInfo || "N/A",
+                                        diasVencer: diasVencer,
+                                        fechaVenc: fechaVencTexto || "N/A"
                                     };
                                 }
                             });
@@ -1104,20 +606,30 @@
                             matUsar = matAlertaSobreapilado.clone();
                             colorHex = 0xff2222;
                             estadoFinalJaba = "SOBREAPILADO (ALERTA)";
+                        } else if (estado.includes("SIN")) {
+                            matUsar = matPlomoSinStock.clone();
+                            colorHex = 0x555861;
+                        } else if (estado.includes("LIB") || normCodigo === "vacio") {
+                            matUsar = matGrisLibre.clone();
+                            colorHex = 0x7a8090;
+                        } else if (diasVencer !== null && diasVencer <= umbralCritico) {
+                            // Producto próximo a vencer (dentro del umbral crítico) -> ROJO
+                            matUsar = matVencCritico.clone();
+                            colorHex = 0xff1e1e;
+                            estadoFinalJaba = diasVencer < 0 ? "VENCIDO" : "CRITICO VENCIMIENTO";
+                            jabasCriticasVenc++;
+                        } else if (diasVencer !== null && diasVencer <= umbralAlerta) {
+                            // Producto próximo a vencer (dentro del umbral de alerta) -> ÁMBAR
+                            matUsar = matVencAlerta.clone();
+                            colorHex = 0xff9500;
+                            estadoFinalJaba = "ALERTA VENCIMIENTO";
+                            jabasAlertaVenc++;
+                        } else if (estado.includes("OBS") || normCodigo === "observados") {
+                            matUsar = matRojoObs.clone();
+                            colorHex = 0xffc107;
                         } else {
-                            if (estado.includes("OBS") || normCodigo === "observados") {
-                                matUsar = matRojoObs.clone();
-                                colorHex = 0xffc107; // CAMBIADO EL INTERNO DE COLOR A AMARILLO
-                            } else if (estado.includes("SIN")) {
-                                matUsar = matPlomoSinStock.clone();
-                                colorHex = 0x555861;
-                            } else if (estado.includes("LIB") || normCodigo === "vacio") {
-                                matUsar = matGrisLibre.clone();
-                                colorHex = 0x7a8090;
-                            } else {
-                                matUsar = matAzul.clone();
-                                colorHex = 0x1d58b5;
-                            }
+                            matUsar = matAzul.clone();
+                            colorHex = 0x1d58b5;
                         }
 
                         const jaba = new THREE.Mesh(jabaGeo, matUsar);
@@ -1131,7 +643,10 @@
                                 jabaCant: `${cantPorJaba || "0"} unds`,
                                 stock: `${stockUnidades || "0"} unds`,
                                 vida: `${vidaUtil || "0"} días`,
-                                estado: estadoFinalJaba
+                                estado: estadoFinalJaba,
+                                extra: extraInfo || "N/A",
+                                diasVencer: diasVencer,
+                                fechaVenc: fechaVencTexto || "N/A"
                             },
                             columna: colNum,
                             piso: piso + 1,
@@ -1147,6 +662,7 @@
 
             document.getElementById('uca-criticos').innerText = columnasConExceso;
             document.getElementById('uca-actual').innerText = `${totalJabasDibu} Jabas`;
+            document.getElementById('uca-por-vencer').innerText = `${jabasCriticasVenc + jabasAlertaVenc} Jabas (🔴${jabasCriticasVenc} / 🟠${jabasAlertaVenc})`;
             const ef = ((totalJabasDibu / 208) * 100).toFixed(1);
             document.getElementById('uca-eficiencia').innerText = `${ef}%`;
         }
@@ -1246,7 +762,34 @@
             document.getElementById('prod-jaba').innerText = p.jabaCant;
             document.getElementById('prod-stock').innerText = p.stock;
             document.getElementById('prod-vida').innerText = p.vida;
+            document.getElementById('prod-fecha-venc').innerText = p.fechaVenc || "N/A";
+
+            const diasVencEl = document.getElementById('prod-dias-venc');
+            if (p.diasVencer === null || p.diasVencer === undefined) {
+                diasVencEl.innerText = "Sin dato";
+                diasVencEl.style.color = "#fff";
+            } else if (p.diasVencer < 0) {
+                diasVencEl.innerText = `Vencido hace ${Math.abs(p.diasVencer)} días`;
+                diasVencEl.style.color = "#ff1e1e";
+            } else if (p.diasVencer <= umbralCritico) {
+                diasVencEl.innerText = `${p.diasVencer} días (CRÍTICO)`;
+                diasVencEl.style.color = "#ff1e1e";
+            } else if (p.diasVencer <= umbralAlerta) {
+                diasVencEl.innerText = `${p.diasVencer} días (ALERTA)`;
+                diasVencEl.style.color = "#ff9500";
+            } else {
+                diasVencEl.innerText = `${p.diasVencer} días`;
+                diasVencEl.style.color = "#fff";
+            }
             
+            const rowExtra = document.getElementById('row-extra');
+            if (p.extra && p.extra !== "N/A") {
+                document.getElementById('prod-extra').innerText = p.extra;
+                rowExtra.style.display = 'flex';
+            } else {
+                rowExtra.style.display = 'none';
+            }
+
             const badge = document.getElementById('prod-estado');
             badge.innerText = p.estado;
             
@@ -1304,6 +847,6 @@
         }
 
         animate();
-    </script><canvas width="1366" height="599" style="display: block; width: 1366px; height: 599px;"></canvas>
-
-</body></html>
+    </script>
+</body>
+</html>
