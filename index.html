@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es"><head>
     <meta charset="UTF-8">
     <title>Simulador 3D en Tiempo Real - Tambos Perú SAC</title>
     <style>
@@ -119,7 +118,7 @@
         <p style="color: #ff3b3b; margin-top: 5px;">🔴 Límite máximo permitido (8 Pisos)</p>
     </div>
 
-    <div id="sync-status">🔄 Esperando archivo local (.csv)...</div>
+    <div id="sync-status" style="color: rgb(0, 255, 204);">✅ ¡Cargado con éxito!</div>
 
     <div id="controls-panel">
         <button class="btn-control active" onclick="filtrarLado('AMBOS', this)">Ver Todo</button>
@@ -129,7 +128,7 @@
         
         <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="cargarCSVLocal(event)">
         <button class="btn-control" style="background-color: #28a745; border-color: #28a745;" onclick="document.getElementById('csv-file-input').click()">📁 Cargar CSV Manual</button>
-        <button class="btn-control" id="btn-save-html" style="background-color: #00d2ff; border-color: #00d2ff; color: #000; display: none;" onclick="exportarHTMLConDatos()">💾 Guardar Estado Actual</button>
+        <button class="btn-control" id="btn-save-html" style="background-color: rgb(0, 210, 255); border-color: rgb(0, 210, 255); color: rgb(0, 0, 0); display: inline-block;" onclick="exportarHTMLConDatos()">💾 Guardar Estado Actual</button>
 
         <div style="display:flex; align-items:center; gap:4px; background:#1a1c26; padding:4px 8px; border-radius:5px; border:1px solid #555;">
             <label for="input-umbral-critico" style="font-size:11px; color:#ff5555; font-weight:bold;">🔴 Crítico (días):</label>
@@ -145,17 +144,17 @@
         <h4>Análisis de UCA</h4>
         <div class="uca-metric-container">
             <div class="uca-metric-box">
-                <span class="uca-val" id="uca-criticos" style="color: #ff3b3b;">0</span>
-                <span class="uca-lbl">Col. Críticas (>8)</span>
+                <span class="uca-val" id="uca-criticos" style="color: #ff3b3b;">2</span>
+                <span class="uca-lbl">Col. Críticas (&gt;8)</span>
             </div>
             <div class="uca-metric-box">
-                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">0%</span>
+                <span class="uca-val" id="uca-eficiencia" style="color: #00ffcc;">47.1%</span>
                 <span class="uca-lbl">Eficiencia Estiba</span>
             </div>
         </div>
         <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Capacidad Máxima:</span><span class="data-value" style="color: #00d2ff;">208 Jabas</span></div>
-        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">0 Jabas</span></div>
-        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Por Vencer (Crít+Alerta):</span><span class="data-value" id="uca-por-vencer" style="color: #ff9500;">0 Jabas</span></div>
+        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Carga Actual:</span><span class="data-value" id="uca-actual">98 Jabas</span></div>
+        <div class="data-row" style="margin: 4px 0; font-size: 11px;"><span class="data-label">Por Vencer (Crít+Alerta):</span><span class="data-value" id="uca-por-vencer" style="color: #ff9500;">45 Jabas (🔴24 / 🟠21)</span></div>
 
         <div class="legend-section">
             <div class="legend-item"><div class="legend-color" style="background-color: #1d58b5;"></div><span>Aprobado (Azul)</span></div>
@@ -170,22 +169,657 @@
         </div>
     </div>
 
-    <div id="detail-card">
-        <h3 id="prod-name">Cargando...</h3>
-        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">-</span></div>
-        <div class="data-row"><span class="data-label">Marca:</span><span class="data-value" id="prod-marca">-</span></div>
-        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">-</span></div>
-        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">-</span></div>
-        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">-</span></div>
-        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">-</span></div>
-        <div class="data-row"><span class="data-label">Fecha Vencimiento:</span><span class="data-value" id="prod-fecha-venc">-</span></div>
-        <div class="data-row"><span class="data-label">Días para Vencer:</span><span class="data-value" id="prod-dias-venc">-</span></div>
-        <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge">PENDIENTE</span></div>
-        <div class="data-row" id="row-extra" style="display: none;"><span class="data-label">Info Adicional:</span><span class="data-value" id="prod-extra" style="color:#00d2ff;">-</span></div>
+    <div id="detail-card" style="display: block;">
+        <h3 id="prod-name">RC CHORIZO PREC PARR CERDO X 0.90 G 12UN</h3>
+        <div class="data-row"><span class="data-label">Código Tambos:</span><span class="data-value" id="prod-codigo">109P69</span></div>
+        <div class="data-row"><span class="data-label">Marca:</span><span class="data-value" id="prod-marca">RICO</span></div>
+        <div class="data-row"><span class="data-label">Ubicación Física:</span><span class="data-value" id="prod-ubica" style="color:#00ffcc;">Lado IZQUIERDO | Columna 8 - Piso 2</span></div>
+        <div class="data-row"><span class="data-label">Contenido Jaba:</span><span class="data-value" id="prod-jaba" style="color:#ffc107;">24 unds</span></div>
+        <div class="data-row"><span class="data-label">Stock Total Lote:</span><span class="data-value" id="prod-stock">388 unds</span></div>
+        <div class="data-row"><span class="data-label">Vida Útil:</span><span class="data-value" id="prod-vida">48 días</span></div>
+        <div class="data-row"><span class="data-label">Fecha Vencimiento:</span><span class="data-value" id="prod-fecha-venc">14/8/2026</span></div>
+        <div class="data-row"><span class="data-label">Días para Vencer:</span><span class="data-value" id="prod-dias-venc" style="color: rgb(255, 30, 30);">7 días (CRÍTICO)</span></div>
+        <div class="data-row"><span class="data-label">Estado:</span><span id="prod-estado" class="badge critico-vencimiento">CRITICO VENCIMIENTO</span></div>
+        <div class="data-row" id="row-extra" style="display: flex;"><span class="data-label">Info Adicional:</span><span class="data-value" id="prod-extra" style="color:#00d2ff;">Frecuente</span></div>
     </div>
 
     <script>
-        const DATOS_PRECARGADOS = null;
+        const DATOS_PRECARGADOS = [
+    {
+        "_rawRow": [
+            "1 - Inicio"
+        ],
+        "CÃ³digo Tambos": "1 - Inicio",
+        "Lado (Izquierdo / Derecho)": "",
+        "NÂ° Columna": ""
+    },
+    {
+        "_rawRow": [
+            "13 - Final"
+        ],
+        "CÃ³digo Tambos": "13 - Final",
+        "Lado (Izquierdo / Derecho)": "",
+        "NÂ° Columna": ""
+    },
+    {
+        "_rawRow": [
+            "(Del 1 al 13),NÂ° Piso (1 al 8",
+            "de abajo a arriba),Marca,DescripciÃ³n del Producto,Empaque del bulto,Tiempo de Vida del Prod. (dÃ­as),Cant de Unidades por Jaba,Stock Unidades,Estado (APROBADO / OBSERVADO),INGRESO,FECHA VENCIMIENTO,LOTE"
+        ],
+        "CÃ³digo Tambos": "(Del 1 al 13),NÂ° Piso (1 al 8",
+        "Lado (Izquierdo / Derecho)": "de abajo a arriba),Marca,DescripciÃ³n del Producto,Empaque del bulto,Tiempo de Vida del Prod. (dÃ­as),Cant de Unidades por Jaba,Stock Unidades,Estado (APROBADO / OBSERVADO),INGRESO,FECHA VENCIMIENTO,LOTE",
+        "NÂ° Columna": ""
+    },
+    {
+        "_rawRow": [
+            "109P72",
+            "IZQUIERDO",
+            "1",
+            "0",
+            "RICO",
+            "RC JAMONADA POLLO TUBO 2 KG",
+            "FUNDA",
+            "48",
+            "8",
+            "0",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "1"
+        ],
+        "CÃ³digo Tambos": "109P72",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "1"
+    },
+    {
+        "_rawRow": [
+            "109P81",
+            "IZQUIERDO",
+            "2",
+            "7",
+            "RICO",
+            "RC JAMONADA CON POLLO PQT x 85 GR 10 ROD",
+            "TERMOFORMADO",
+            "48",
+            "180",
+            "1256",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "2"
+        ],
+        "CÃ³digo Tambos": "109P81",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "2"
+    },
+    {
+        "_rawRow": [
+            "109P70",
+            "IZQUIERDO",
+            "3",
+            "7",
+            "RICO",
+            "R PERRO CALIENTE POLLO X 900GR 24 UND",
+            "TERMOFORMADO",
+            "48",
+            "24",
+            "126",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "3"
+        ],
+        "CÃ³digo Tambos": "109P70",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "3"
+    },
+    {
+        "_rawRow": [
+            "109P65",
+            "IZQUIERDO",
+            "4",
+            "7",
+            "RICO",
+            "RC SALCH POLLO ESP X 100GR X 3UND",
+            "TERMOFORMADO",
+            "48",
+            "180",
+            "1205",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "4"
+        ],
+        "CÃ³digo Tambos": "109P65",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "4"
+    },
+    {
+        "_rawRow": [
+            "109S74",
+            "IZQUIERDO",
+            "5",
+            "0",
+            "RICO",
+            "R PATE (UNDX100GR)",
+            "FUNDA",
+            "48",
+            "160",
+            "0",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "5"
+        ],
+        "CÃ³digo Tambos": "109S74",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "5"
+    },
+    {
+        "_rawRow": [
+            "109Q57",
+            "IZQUIERDO",
+            "6",
+            "9",
+            "RICO",
+            "HOT DOG TRADICIONAL X200GR RICO",
+            "TERMOFORMADO",
+            "48",
+            "100",
+            "680",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "6"
+        ],
+        "CÃ³digo Tambos": "109Q57",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "6"
+    },
+    {
+        "_rawRow": [
+            "109S26",
+            "IZQUIERDO",
+            "7",
+            "1",
+            "RICO",
+            "RC JAMON SANDWICH (MOLDE X 2.5KG)",
+            "FUNDA",
+            "60",
+            "7",
+            "4",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "7"
+        ],
+        "CÃ³digo Tambos": "109S26",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "7"
+    },
+    {
+        "_rawRow": [
+            "109P69",
+            "IZQUIERDO",
+            "8",
+            "8",
+            "RICO",
+            "RC CHORIZO PREC PARR CERDO X 0.90 G 12UN",
+            "TERMOFORMADO",
+            "48",
+            "24",
+            "388",
+            "APROBADO",
+            "Frecuente",
+            "14/8/2026",
+            "8"
+        ],
+        "CÃ³digo Tambos": "109P69",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "8"
+    },
+    {
+        "_rawRow": [
+            "109P69",
+            "IZQUIERDO",
+            "9",
+            "8",
+            "RICO",
+            "RC CHORIZO PREC PARR CERDO X 0.90 G 12UN",
+            "TERMOFORMADO",
+            "48",
+            "24",
+            "388",
+            "APROBADO",
+            "Frecuente",
+            "15/8/2026",
+            "9"
+        ],
+        "CÃ³digo Tambos": "109P69",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "9"
+    },
+    {
+        "_rawRow": [
+            "VACIO",
+            "DERECHO",
+            "10",
+            "0",
+            "RICO /CASAEUROPA",
+            "DEFINIR MARCA",
+            "VARIOS",
+            "VARIOS",
+            "0",
+            "0",
+            "LIBRE",
+            "Frecuente",
+            "16/8/2026",
+            "10"
+        ],
+        "CÃ³digo Tambos": "VACIO",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "10"
+    },
+    {
+        "_rawRow": [
+            "109P66",
+            "IZQUIERDO",
+            "11",
+            "10",
+            "RICO",
+            "RC CHORIZO COCIDO UNITARIO 83GR",
+            "TERMOFORMADO",
+            "48",
+            "180",
+            "1572",
+            "APROBADO",
+            "Frecuente",
+            "17/8/2026",
+            "11"
+        ],
+        "CÃ³digo Tambos": "109P66",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "11"
+    },
+    {
+        "_rawRow": [
+            "109P63",
+            "IZQUIERDO",
+            "12",
+            "5",
+            "RICO",
+            "R JAMONADA CON POLLO X 200G",
+            "TERMOFORMADO",
+            "48",
+            "75",
+            "341",
+            "APROBADO",
+            "Frecuente",
+            "18/8/2026",
+            "12"
+        ],
+        "CÃ³digo Tambos": "109P63",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "12"
+    },
+    {
+        "_rawRow": [
+            "109P71",
+            "IZQUIERDO",
+            "13",
+            "4",
+            "RICO",
+            "RC SUPER SALCHICHA ROSADA 900GR X 24UND",
+            "TERMOFORMADO",
+            "48",
+            "20",
+            "80",
+            "APROBADO",
+            "Frecuente",
+            "19/8/2026",
+            "13"
+        ],
+        "CÃ³digo Tambos": "109P71",
+        "Lado (Izquierdo / Derecho)": "IZQUIERDO",
+        "NÂ° Columna": "13"
+    },
+    {
+        "_rawRow": [
+            "OBSERVADOS",
+            "DERECHO",
+            "1",
+            "5",
+            "RICO /CASAEUROPA",
+            "MULTIPLE MARCAS",
+            "VARIOS",
+            "VARIOS",
+            "0",
+            "0",
+            "OBSERVADOS",
+            "Frecuente",
+            "20/8/2026",
+            "14"
+        ],
+        "CÃ³digo Tambos": "OBSERVADOS",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "1"
+    },
+    {
+        "_rawRow": [
+            "109R97",
+            "DERECHO",
+            "2",
+            "1",
+            "CASA EUROPA",
+            "JAMON PIZZERO (MOLDE 3KG)",
+            "FUNDA",
+            "60",
+            "7",
+            "1",
+            "APROBADO",
+            "Frecuente",
+            "21/8/2026",
+            "15"
+        ],
+        "CÃ³digo Tambos": "109R97",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "2"
+    },
+    {
+        "_rawRow": [
+            "109P61",
+            "DERECHO",
+            "3",
+            "5",
+            "CASA EUROPA",
+            "CABANOSSI (CJX25UNDX625GR)",
+            "AMBIENTE",
+            "120",
+            "6",
+            "26",
+            "APROBADO",
+            "Frecuente",
+            "22/8/2026",
+            "16"
+        ],
+        "CÃ³digo Tambos": "109P61",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "3"
+    },
+    {
+        "_rawRow": [
+            "109R96",
+            "DERECHO",
+            "4",
+            "4",
+            "CASA EUROPA",
+            "CHICHARRON PRENSA (MOLDE 3KG)",
+            "MOLDE",
+            "60",
+            "6",
+            "23",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "17"
+        ],
+        "CÃ³digo Tambos": "109R96",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "4"
+    },
+    {
+        "_rawRow": [
+            "109R82",
+            "DERECHO",
+            "5",
+            "2",
+            "CASA EUROPA",
+            "VIENESA ESPECIAL(PAQX240GX5UND)",
+            "TERMOFORMADO",
+            "40",
+            "40",
+            "100",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "18"
+        ],
+        "CÃ³digo Tambos": "109R82",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "5"
+    },
+    {
+        "_rawRow": [
+            "109S25",
+            "DERECHO",
+            "6",
+            "1",
+            "RICO",
+            "RC JAMON SANDWICH (MOLDE X 5.0KG)",
+            "FUNDA",
+            "60",
+            "3",
+            "0",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "19"
+        ],
+        "CÃ³digo Tambos": "109S25",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "6"
+    },
+    {
+        "_rawRow": [
+            "109P62",
+            "DERECHO",
+            "7",
+            "1",
+            "CASA EUROPA",
+            "SALCHICHA HUACHO (UNDX150GR)",
+            "REFRIGERADO",
+            "30",
+            "160",
+            "65",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "20"
+        ],
+        "CÃ³digo Tambos": "109P62",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "7"
+    },
+    {
+        "_rawRow": [
+            "VACIO",
+            "DERECHO",
+            "8",
+            "0",
+            "RICO /CASAEUROPA",
+            "DEFINIR MARCA",
+            "VARIOS",
+            "VARIOS",
+            "0",
+            "0",
+            "LIBRE",
+            "Frecuente",
+            "27/8/2026",
+            "21"
+        ],
+        "CÃ³digo Tambos": "VACIO",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "8"
+    },
+    {
+        "_rawRow": [
+            "109P64",
+            "DERECHO",
+            "9",
+            "6",
+            "RICO",
+            "RC SALCH POLLO ESP X 200GR X 6UND",
+            "TERMOFORMADO",
+            "48",
+            "100",
+            "576",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "22"
+        ],
+        "CÃ³digo Tambos": "109P64",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "9"
+    },
+    {
+        "_rawRow": [
+            "VACIO",
+            "DERECHO",
+            "10",
+            "0",
+            "RICO /CASAEUROPA",
+            "DEFINIR MARCA",
+            "VARIOS",
+            "VARIOS",
+            "0",
+            "0",
+            "LIBRE",
+            "Frecuente",
+            "30/9/2026",
+            "23"
+        ],
+        "CÃ³digo Tambos": "VACIO",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "10"
+    },
+    {
+        "_rawRow": [
+            "109P36",
+            "DERECHO",
+            "11",
+            "2",
+            "CASA EUROPA",
+            "JAMON PIZZERO (PQTX100GRX6LON)",
+            "REFRIGERADO",
+            "45",
+            "180",
+            "241",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "24"
+        ],
+        "CÃ³digo Tambos": "109P36",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "11"
+    },
+    {
+        "_rawRow": [
+            "109P37",
+            "DERECHO",
+            "12",
+            "4",
+            "CASA EUROPA",
+            "JAMONADA ESPECIAL (PQTX100GRX8LON)",
+            "REFRIGERADO",
+            "45",
+            "180",
+            "340",
+            "APROBADO",
+            "Frecuente",
+            "30/9/2026",
+            "25"
+        ],
+        "CÃ³digo Tambos": "109P37",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "12"
+    },
+    {
+        "_rawRow": [
+            "109P35",
+            "DERECHO",
+            "13",
+            "1",
+            "CASA EUROPA",
+            "CHICHARRON PRENSA (PQTX100GRX6UND)",
+            "REFRIGERADO",
+            "45",
+            "180",
+            "171",
+            "APROBADO",
+            "Frecuente",
+            "1/9/2026",
+            "26"
+        ],
+        "CÃ³digo Tambos": "109P35",
+        "Lado (Izquierdo / Derecho)": "DERECHO",
+        "NÂ° Columna": "13"
+    },
+    {
+        "_rawRow": [
+            "109R46",
+            "EXTERIOR",
+            "CONGELADOR 1",
+            "1",
+            "RICO",
+            "R NUGGET DE POLLO X 180G X 10UND",
+            "BOLSA",
+            "180",
+            "200",
+            "544",
+            "APROBADO",
+            "Frecuente",
+            "2/9/2026",
+            "27"
+        ],
+        "CÃ³digo Tambos": "109R46",
+        "Lado (Izquierdo / Derecho)": "EXTERIOR",
+        "NÂ° Columna": "CONGELADOR 1"
+    },
+    {
+        "_rawRow": [
+            "109R46",
+            "EXTERIOR",
+            "CONGELADOR 2",
+            "1",
+            "RICO",
+            "R NUGGET DE POLLO X 180G X 10UND",
+            "BOLSA",
+            "180",
+            "200",
+            "544",
+            "APROBADO",
+            "Frecuente",
+            "3/9/2026",
+            "28"
+        ],
+        "CÃ³digo Tambos": "109R46",
+        "Lado (Izquierdo / Derecho)": "EXTERIOR",
+        "NÂ° Columna": "CONGELADOR 2"
+    },
+    {
+        "_rawRow": [
+            "109R46",
+            "EXTERIOR",
+            "CONGELADOR 3",
+            "1",
+            "RICO",
+            "R NUGGET DE POLLO X 180G X 10UND",
+            "BOLSA",
+            "180",
+            "200",
+            "544",
+            "APROBADO",
+            "Frecuente",
+            "4/9/2026",
+            "29"
+        ],
+        "CÃ³digo Tambos": "109R46",
+        "Lado (Izquierdo / Derecho)": "EXTERIOR",
+        "NÂ° Columna": "CONGELADOR 3"
+    }
+];
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x11111a);
@@ -847,6 +1481,6 @@
         }
 
         animate();
-    </script>
-</body>
-</html>
+    </script><canvas width="1366" height="599" style="display: block; width: 1366px; height: 599px;"></canvas>
+
+</body></html>
